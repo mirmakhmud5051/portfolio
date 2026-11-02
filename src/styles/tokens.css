@@ -1,0 +1,25 @@
+:root {
+  --bg: #08080a;
+  --bg-soft: #0b0b0e;
+  --surface: #111114;
+  --surface-2: #16161b;
+  --surface-3: #1d1d23;
+  --text: #ededea;
+  --text-dim: #b4b4b8;
+  --muted: #7c7c85;
+  --line: rgba(201, 209, 196, 0.12);
+  --line-strong: rgba(201, 209, 196, 0.28);
+  --accent: #c9d1c4;
+  --accent-bright: #eef2ea;
+  --lime: #d7ff3e;
+  --font-display: 'Syne', 'Arial Black', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --gutter: clamp(20px, 4.2vw, 68px);
+  --container: 1560px;
+  --nav-h: 84px;
+  --radius: 22px;
+  --radius-sm: 12px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+}
