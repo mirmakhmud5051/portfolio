@@ -1,4 +1,4 @@
-import { a as __exportAll, i as __commonJSMin, n as require_scheduler, o as __toESM, r as require_react, t as require_jsx_runtime } from "./index-Bv547AgY.js";
+import { a as __exportAll, i as __commonJSMin, n as require_scheduler, o as __toESM, r as require_react, t as require_jsx_runtime } from "./index-IU_GVxbc.js";
 // node_modules/three/build/three.core.js
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 /**

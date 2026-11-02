@@ -1538,8 +1538,16 @@ p {
   object-fit: cover;
   object-position: center 24%;
   filter: grayscale(1) contrast(1.08) brightness(0.9);
-  transition: filter 0.7s var(--ease), transform 0.9s var(--ease);
+  opacity: 0;
+  transition:
+    filter 0.7s var(--ease),
+    transform 0.9s var(--ease),
+    opacity 1.1s var(--ease);
   transform: scale(1.02);
+}
+
+.portrait__image.is-revealed {
+  opacity: 1;
 }
 
 .portrait:hover .portrait__image {
@@ -1554,9 +1562,17 @@ p {
   width: 100%;
   height: 100%;
   display: block;
+  cursor: pointer;
   filter: grayscale(1) contrast(1.12) brightness(0.88);
-  transition: filter 0.7s var(--ease), transform 0.9s var(--ease);
+  transition:
+    filter 0.7s var(--ease),
+    transform 0.9s var(--ease),
+    opacity 1s var(--ease);
   transform: scale(1.02);
+}
+
+.portrait__canvas.is-done {
+  opacity: 0;
 }
 
 .portrait:hover .portrait__canvas {

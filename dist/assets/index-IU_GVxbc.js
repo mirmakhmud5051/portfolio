@@ -19788,7 +19788,7 @@ var __vitePreload = function preload(baseModule, deps, importerUrl) {
 	});
 };
 // src/sections/Hero.tsx
-var HeroScene = (0, import_react.lazy)(() => __vitePreload(() => import("./HeroScene-ChPQoxkl.js").then((module) => ({ default: module.HeroScene })), []));
+var HeroScene = (0, import_react.lazy)(() => __vitePreload(() => import("./HeroScene-pnR-TmAJ.js").then((module) => ({ default: module.HeroScene })), []));
 gsapWithCSS.registerPlugin(ScrollTrigger);
 function renderChars(text) {
 	return Array.from(text).map((char, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
@@ -20140,13 +20140,15 @@ function CountUp({ value }) {
 	}), suffix] });
 }
 // src/components/GenerativePortrait.tsx
-var PORTRAIT_SRC = "/portrait-cinematic.jpg";
-var IMAGE_ASPECT = 564 / 686;
+var PORTRAIT_SRC = "/portrait-cinematic.jpg?v=2";
+var IMAGE_ASPECT = 1091 / 1442;
 var ASSEMBLY_START = 1.2;
 var ASSEMBLY_END = 4.2;
-var FINISH = 7;
+var REVEAL = 5.4;
+var FINISH = 6.4;
 function GenerativePortrait() {
 	const canvasRef = (0, import_react.useRef)(null);
+	const photoRef = (0, import_react.useRef)(null);
 	(0, import_react.useEffect)(() => {
 		const canvasEl = canvasRef.current;
 		if (!canvasEl) return;
@@ -20161,6 +20163,7 @@ function GenerativePortrait() {
 		let frame = 0;
 		let started = false;
 		let isInView = false;
+		let revealed = false;
 		let startedAt = 0;
 		let destroyed = false;
 		const mouse = {
@@ -20172,14 +20175,15 @@ function GenerativePortrait() {
 			y: .5
 		};
 		const resize = () => {
-			const rect = canvasEl.getBoundingClientRect();
-			width = rect.width;
-			height = rect.height;
+			const rect = (canvasEl.parentElement ?? canvasEl).getBoundingClientRect();
+			const nextW = Math.max(1, rect.width);
+			const nextH = Math.max(1, rect.height);
+			if (Math.abs(nextW - width) < 1 && Math.abs(nextH - height) < 1) return;
+			width = nextW;
+			height = nextH;
 			canvasEl.width = Math.max(1, Math.round(width * dpr));
 			canvasEl.height = Math.max(1, Math.round(height * dpr));
 			ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-			canvasEl.style.width = width + "px";
-			canvasEl.style.height = height + "px";
 			if (particles.length > 0) layoutTargets();
 		};
 		const layoutTargets = () => {
@@ -20201,8 +20205,8 @@ function GenerativePortrait() {
 			targetMouse.y = (e.clientY - rect.top) / rect.height;
 		};
 		const samplePixels = (img) => {
-			const sw = 220;
-			const sh = 280;
+			const sw = 150;
+			const sh = Math.round(sw / IMAGE_ASPECT);
 			const off = document.createElement("canvas");
 			off.width = sw;
 			off.height = sh;
@@ -20210,30 +20214,57 @@ function GenerativePortrait() {
 			if (!octx) return;
 			octx.drawImage(img, 0, 0, sw, sh);
 			const data = octx.getImageData(0, 0, sw, sh).data;
-			const samples = [];
-			for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) {
+			const lum = (x, y) => {
 				const i = (y * sw + x) * 4;
 				const alpha = data[i + 3] / 255;
-				const bright = (data[i] + data[i + 1] + data[i + 2]) / 3 * alpha / 255;
-				if (bright < .97) samples.push({
+				return (data[i] + data[i + 1] + data[i + 2]) / 3 / 255 * alpha;
+			};
+			let topSum = 0;
+			let topN = 0;
+			const topEdge = Math.max(2, Math.floor(sh * .16));
+			for (let y = 0; y < topEdge; y++) for (let x = 0; x < sw; x++) {
+				topSum += lum(x, y);
+				topN++;
+			}
+			const brightBackground = topN > 0 && topSum / topN > .75;
+			const raw = [];
+			for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) {
+				const b = lum(x, y);
+				if (brightBackground ? b < .84 : b > .05) raw.push({
 					x: x / sw,
 					y: y / sh,
-					bright
+					bright: b
 				});
 			}
-			pixels = samples.length ? samples : [{
-				x: .5,
-				y: .5,
-				bright: 1
-			}];
+			let source = raw;
+			if (source.length < 300) {
+				source = [];
+				for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) source.push({
+					x: x / sw,
+					y: y / sh,
+					bright: lum(x, y)
+				});
+			}
+			let min = 1;
+			let max = 0;
+			for (const s of source) {
+				if (s.bright < min) min = s.bright;
+				if (s.bright > max) max = s.bright;
+			}
+			const range = Math.max(.14, max - min);
+			pixels = source.map((s) => ({
+				x: s.x,
+				y: s.y,
+				bright: .18 + .82 * Math.min(1, Math.max(0, (s.bright - min) / range))
+			}));
 			buildParticles();
 		};
 		const buildParticles = () => {
-			const count = reduce ? 800 : width < 480 ? 1300 : 2200;
+			const count = Math.min(reduce ? 6e3 : width < 480 ? 11e3 : 22e3, pixels.length);
 			const maxDist = Math.max(width, height) * 1.1;
 			particles = [];
 			for (let i = 0; i < count; i++) {
-				const pt = pixels[i % pixels.length];
+				const pt = pixels[Math.floor(i * pixels.length / count)];
 				const angle = Math.random() * Math.PI * 2;
 				const dist = Math.random() * maxDist;
 				particles.push({
@@ -20246,7 +20277,7 @@ function GenerativePortrait() {
 					tx: width / 2,
 					ty: height / 2,
 					bright: pt.bright,
-					size: Math.random() * 1.15 + .25
+					size: Math.random() * 1.2 + .65
 				});
 			}
 			layoutTargets();
@@ -20254,6 +20285,12 @@ function GenerativePortrait() {
 		const contrastColor = (bright) => {
 			const level = Math.round(bright * 255);
 			return `rgb(${level},${level},${level})`;
+		};
+		const reveal = () => {
+			if (revealed) return;
+			revealed = true;
+			photoRef.current?.classList.add("is-revealed");
+			canvasEl.classList.add("is-done");
 		};
 		const drawFinal = () => {
 			ctx.fillStyle = "#08080a";
@@ -20307,8 +20344,8 @@ function GenerativePortrait() {
 				ctx.fill();
 			}
 			ctx.globalAlpha = 1;
-			if (t > 6 && t < FINISH) {
-				const sy = (t - 6) / 1 * height;
+			if (t > 5.4 && t < FINISH) {
+				const sy = (t - 5.4) / 1 * height;
 				const grad = ctx.createLinearGradient(0, sy - 14, 0, sy + 14);
 				grad.addColorStop(0, "rgba(255,255,255,0)");
 				grad.addColorStop(.5, "rgba(255,255,255,0.12)");
@@ -20316,13 +20353,17 @@ function GenerativePortrait() {
 				ctx.fillStyle = grad;
 				ctx.fillRect(0, sy - 14, width, 28);
 			}
+			if (t >= REVEAL) reveal();
 			if (t < FINISH) frame = requestAnimationFrame(render);
 		};
 		const start = () => {
 			if (destroyed || !particles.length) return;
 			cancelAnimationFrame(frame);
 			started = true;
+			revealed = false;
 			startedAt = performance.now();
+			photoRef.current?.classList.remove("is-revealed");
+			canvasEl.classList.remove("is-done");
 			mouse.x = targetMouse.x = .5;
 			mouse.y = targetMouse.y = .5;
 			for (const p of particles) {
@@ -20335,13 +20376,14 @@ function GenerativePortrait() {
 			}
 			if (reduce) {
 				drawFinal();
+				reveal();
 				return;
 			}
 			render();
 		};
 		resize();
 		const observer = new ResizeObserver(resize);
-		observer.observe(canvasEl);
+		observer.observe(canvasEl.parentElement ?? canvasEl);
 		canvasEl.addEventListener("mousemove", onMouse);
 		canvasEl.addEventListener("click", start);
 		const img = new Image();
@@ -20373,13 +20415,17 @@ function GenerativePortrait() {
 			canvasEl.removeEventListener("click", start);
 		};
 	}, []);
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("canvas", {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
+		ref: photoRef,
+		className: "portrait__image",
+		src: PORTRAIT_SRC,
+		alt: "Portrait"
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("canvas", {
 		ref: canvasRef,
 		className: "portrait__canvas",
-		role: "img",
-		"aria-label": "Animated portrait",
+		"aria-hidden": "true",
 		title: "Click to replay"
-	});
+	})] });
 }
 // src/sections/About.tsx
 function About() {
